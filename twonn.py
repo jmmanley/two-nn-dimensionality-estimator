@@ -14,17 +14,22 @@ import matplotlib.pyplot as plt
 # June 2019
 
 
-def estimate_id(X, plot=False):
+def estimate_id(X, plot=False, X_is_dist=False):
     # INPUT:
-    #   X = Nxp matrix of N p-dimensional samples
+    #   X = Nxp matrix of N p-dimensional samples (when X_is_dist is False)
+    #   plot = Boolean flag of whether to plot fit
+    #   X_is_dist = Boolean flag of whether X is an NxN distance metric instead
     #
     # OUTPUT:
     #   d = TWO-NN estimate of intrinsic dimensionality
 
-    (N, p) = X.shape
+    N = X.shape[0]
 
-    # COMPUTE PAIRWISE DISTANCES FOR EACH POINT IN THE DATASET
-    dist = scipy.spatial.distance.squareform(scipy.spatial.distance.pdist(X, metric='euclidean'))
+    if X_is_dist:
+        dist = X
+    else:
+        # COMPUTE PAIRWISE DISTANCES FOR EACH POINT IN THE DATASET
+        dist = scipy.spatial.distance.squareform(scipy.spatial.distance.pdist(X, metric='euclidean'))
 
     # FOR EACH POINT, COMPUTE mu_i = r_2 / r_1,
     # where r_1 and r_2 are first and second shortest distances
@@ -45,7 +50,7 @@ def estimate_id(X, plot=False):
     d = lr.coef_[0][0] # extract slope
 
     if plot:
-        # PLOT FIT THAT ESIMATES INTRINSIC DIMENSION
+        # PLOT FIT THAT ESTIMATES INTRINSIC DIMENSION
         s=plt.scatter(np.log(mu[sort_idx]), -np.log(1-Femp), c='r', label='data')
         p=plt.plot(np.log(mu[sort_idx]), lr.predict(np.log(mu[sort_idx]).reshape(-1,1)), c='k', label='linear fit')
         plt.xlabel('$\log(\mu_i)$'); plt.ylabel('$-\log(1-F_{emp}(\mu_i))$')
